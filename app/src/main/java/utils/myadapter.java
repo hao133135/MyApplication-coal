@@ -77,8 +77,8 @@ public class myadapter<T> extends BaseAdapter  {
             viewHolder = (ViewHolder)convertView.getTag();
         }
         Coalbytruckbean cya = coalfieldzoneList.get(position);
-        viewHolder.nameTextView.setText((CharSequence) cya.getVehicleno());
-        viewHolder.aearTextView.setText((CharSequence) cya.getCoalfieldid());
+        viewHolder.nameTextView.setText(cya.getVehicleno());
+        viewHolder.aearTextView.setText(cya.getCoalfieldid());
         return convertView;
     }
     public void setSelectedItem(int selectedItem)
@@ -105,18 +105,4 @@ public class myadapter<T> extends BaseAdapter  {
             return;
         }
     }
-    /**
-     * 局部刷新
-     * @param view
-     * @param itemIndex
-     */
-    public void updateitemView(View view, int itemIndex) {
-        if (view == null) {
-            return;
-        }else
-        view.setBackgroundColor(Color.WHITE);
-
-    }
-
-
 }

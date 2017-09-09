@@ -19,10 +19,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -41,12 +38,8 @@ public class MainActivity extends AppCompatActivity {
         username = (EditText) findViewById(R.id.activity_login_user);
         password = (EditText) findViewById(R.id.activity_login_password);
         button = (Button) findViewById(R.id.activity_login_btn);
-
-
-
         button.setOnClickListener(new buttonListener());
     }
-
     private class buttonListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
@@ -56,36 +49,34 @@ public class MainActivity extends AppCompatActivity {
                     String user = username.getText().toString();
                     String pwd = password.getText().toString();
                     //http://39.108.73.207
-
                     HttpClient httpClient = new DefaultHttpClient();
-                    HttpPost httpPost = new HttpPost("http://192.168.0.200:8090/home/GetProduct");
+                    HttpPost httpPost = new HttpPost("http://192.168.0.200:8090/APP/Validate");
                     httpPost.setHeader("Content-Type", "application/json;charset=utf-8");
-
                    try {
                        JSONObject param = new JSONObject();
-                       param.put("loginname",user);
-                       param.put("loginpwd",pwd);
+                       param.put("LoginName",user);
+                       param.put("LoginPwd",pwd);
                        StringEntity se = new StringEntity(param.toString());
+                       se.setContentType("application/json;charset=utf-8");
                        httpPost.setEntity(se);
                        HttpResponse httpResponse = httpClient.execute(httpPost);
                        String key = EntityUtils.toString(httpResponse.getEntity());
-                       int stats = 200;//jsonObject.getInt("stats");
-                        if(stats ==200){
+                       String stats = key.toString();
+                      // String stats ="1";
+                       if(user.isEmpty()||"".equals(user)||pwd.isEmpty()||"".equals(pwd)){
+                           Looper.prepare();
+                           Toast.makeText(MainActivity.this,"请输入用户名和密码！",Toast.LENGTH_SHORT).show();
+                           Looper.loop();
+                       }else if(stats.equals("1")){
                             Intent i = new Intent(MainActivity.this, from.class);
                             i.putExtra("user1",user);
                             startActivity(i);
-                        }else if(user.isEmpty()||"".equals(user)||pwd.isEmpty()||"".equals(pwd)){
-                            Looper.prepare();
-                            Toast.makeText(MainActivity.this,"请输入用户名和密码！",Toast.LENGTH_SHORT).show();
-                            Looper.loop();
                         }else {
                             Looper.prepare();
                             Toast.makeText(MainActivity.this,"用户名密码错误！",Toast.LENGTH_SHORT).show();
                             Looper.loop();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

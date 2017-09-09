@@ -1,11 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias '车辆验收'
+            keyPassword '133135'
+            storeFile file('D:/AndroidCoding/MyApplication/app/车辆验收.apk')
+            storePassword '133135'
+        }
+    }
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '25.0.3'
     defaultConfig {
         applicationId "com.example.admin.myapplication"
-        minSdkVersion 15
+        minSdkVersion 14
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -13,8 +21,15 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
+            debuggable true
+            zipAlignEnabled false
         }
     }
 }

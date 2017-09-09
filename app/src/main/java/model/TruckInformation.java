@@ -7,9 +7,11 @@ import java.io.File;
  */
 
 public class TruckInformation {
+    private String coalbytruckid;
     private String vehicleno;
     private String coalfieldid;
     private String realcoalfieldid;
+    private String coalmineid;
     private String remark;
     private String discount;
     private String deductweight;
@@ -22,6 +24,14 @@ public class TruckInformation {
     private File imagefile2;
     private File imagefile3;
     private File imagefile4;
+
+    public String getCoalbytruckid() {
+        return coalbytruckid;
+    }
+
+    public void setCoalbytruckid(String coalbytruckid) {
+        this.coalbytruckid = coalbytruckid;
+    }
 
     public String getVehicleno() {
         return vehicleno;
@@ -45,6 +55,14 @@ public class TruckInformation {
 
     public void setRealcoalfieldid(String realcoalfieldid) {
         this.realcoalfieldid = realcoalfieldid;
+    }
+
+    public String getCoalmineid() {
+        return coalmineid;
+    }
+
+    public void setCoalmineid(String coalmineid) {
+        this.coalmineid = coalmineid;
     }
 
     public String getRemark() {

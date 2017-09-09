@@ -18,16 +18,19 @@ import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.Coalbytruckbean;
 import model.Coalfieldzonebean;
@@ -42,22 +45,31 @@ import static activiity.R.id.spinner;
 
 public class from extends AppCompatActivity {
 
-    private List<String> slist = new ArrayList<String>();
+    private List<String > slist = new ArrayList<>();
+    private List<String > sslist = new ArrayList<>();
     private List<Coalbytruckbean> llist = new ArrayList<Coalbytruckbean>();
-    private TextView myTextView;
     private Spinner mySpinner;
     private ArrayAdapter<String> adapter;
+    private myadapter<Coalfieldzonebean> myArrayAdapter;
     private Button buttonCheck;
     private Button buttonClose;
-    private boolean isSelected = false;
-
     private ListView mylistview;
+    private TextView myTextView;
+    private Map map = new HashMap();
+    private JSONArray jsonreal,jsonzone;
+    private Coalbytruckbean cya = new Coalbytruckbean();
+    private String username;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.from);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+         /*获取Intent中的Bundle对象*/
+        Bundle bundle = this.getIntent().getExtras();
+        /*获取Bundle中的数据，注意类型和key*/
+        username = bundle.getString("username");
         mySpinner = (Spinner) findViewById(spinner);
         buttonCheck = (Button) findViewById(R.id.Check);
         buttonClose = (Button) findViewById(close);
@@ -77,20 +89,31 @@ public class from extends AppCompatActivity {
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
             myArrayAdapter.setSelectedItem(position);
             myArrayAdapter.notifyDataSetChanged();
-
-                for(int i=0;i<parent.getCount();i++){
-                    if (position == i) {
-                        buttonCheck.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent i = new Intent(from.this, acceptance.class);
-                                i.putExtra("vehicleno",(String)llist.get(position).getVehicleno());
-                                i.putExtra("coalfieldid",llist.get(position).getCoalfieldid());
-                                startActivity(i);
-                            }
-                        });
+                try {
+                    final JSONObject jsonObject = (JSONObject) jsonzone.get(0);
+                    for(int i=0;i<parent.getCount();i++){
+                        if (position == i) {
+                            buttonCheck.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent i = new Intent(from.this, acceptance.class);
+                                    i.putExtra("vehicleno",llist.get(position).getVehicleno());
+                                    i.putExtra("coalfieldid",llist.get(position).getCoalfieldid());
+                                    i.putExtra("username",username);
+                                    try {
+                                        i.putExtra("coalbytruckid",(String)jsonObject.get("COALBYTRUCKID"));
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    startActivity(i);
+                                }
+                            });
+                        }
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
             }
         });
     }
@@ -102,9 +125,9 @@ public class from extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                        Looper.prepare();
-                        Toast.makeText(from.this, "请选择验收车辆！", Toast.LENGTH_SHORT).show();
-                        Looper.loop();
+                    Looper.prepare();
+                    Toast.makeText(from.this, "请选择验收车辆！", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
                 }
             }).start();
 
@@ -118,6 +141,7 @@ public class from extends AppCompatActivity {
             startActivity(i);
         }
     }
+
 
     private void spinnerClick() {
         //第一步：添加一个下拉列表项的list，这里添加的项就是下拉列表的菜单项
@@ -138,6 +162,9 @@ public class from extends AppCompatActivity {
                 arg0.setVisibility(View.VISIBLE);
                 cleanlist();
                 listViewClick();
+
+
+
             }
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -160,68 +187,92 @@ public class from extends AppCompatActivity {
 
             }
         });
+
     }
 
    public List<Coalbytruckbean> mylistView(){
-       Coalbytruckbean cya = null;
+           new Thread(new Runnable() {
+               @Override
+               public void run() {
+                   Looper.prepare();
 
-       String fieldname = mySpinner.getSelectedItem().toString();
-       System.out.print(fieldname);
-       try {
-           HttpClient httpClient = new DefaultHttpClient();
-           HttpPost httpPost = new HttpPost("http://192.168.0.106:8081/1user/querycoalyard/");
-           httpPost.setHeader("Content-Type", "application/json;charset=utf-8");
-           JSONObject param = new JSONObject();
-           param.put("fieldname",fieldname);
-           StringEntity se = new StringEntity(param.toString());
-           httpPost.setEntity(se);
-           HttpResponse httpResponse = httpClient.execute(httpPost);
-           String key = EntityUtils.toString(httpResponse.getEntity());
-           JSONObject jsonObject = new JSONObject(key);
-           JSONArray jsonvehicleno = jsonObject.getJSONArray("vehicleno");
-           JSONArray jsoncoalfieldid = jsonObject.getJSONArray("coalfieldid");
-           for (int i = 0; i < jsonvehicleno.length(); i++) {
-               cya = new Coalbytruckbean();
-               Object vehicleno = jsonvehicleno.get(i);
-               Object coalfieldid = jsoncoalfieldid.get(i);
-               cya.setVehicleno(vehicleno);
-               cya.setCoalfieldid((BigDecimal) coalfieldid);
-               llist.add(cya);
-           }
-       }catch (Exception e){
-           e.printStackTrace();
-       }
-
+                   String fieldname = mySpinner.getSelectedItem().toString();
+                   try {
+                       HttpClient httpClient = new DefaultHttpClient();
+                       HttpPost httpPost = new HttpPost("http://192.168.0.200:8090/App/GetCoalByTruck");
+                       httpPost.setHeader("Content-Type", "application/json;charset=utf-8");
+                       JSONObject param = new JSONObject();
+                       if (fieldname != null) {
+                           param.put("coalId", map.get(fieldname));
+                       }
+                       StringEntity se = new StringEntity(param.toString());
+                       se.setContentType("application/json;charset=utf-8");
+                       httpPost.setEntity(se);
+                       HttpResponse httpResponse = httpClient.execute(httpPost);
+                       String key = EntityUtils.toString(httpResponse.getEntity());
+                       JSONArray jsonArray = new JSONArray(key);
+                       jsonzone = jsonArray;
+                       if(jsonArray.length()!=0) {
+                           JSONObject jsonObject = jsonArray.getJSONObject(0);
+                           cya.setVehicleno((String) jsonObject.get("vehicleno"));
+                           cya.setCoalfieldname((String) jsonObject.get("zonename"));
+                           cya.setCoalfieldid(fieldname + "-" + jsonObject.get("zonename"));
+                           llist.add(cya);
+                       }
+                   } catch (Exception e) {
+                       e.printStackTrace();
+                   }
+                   Looper.loop();
+               }
+           }).start();
        return llist;
    }
-   public List<String> myslist(){
+   public List<String> myslist() {
+       if(slist.size()<1) {
+           new Thread(new Runnable() {
+               @Override
+               public void run() {
+                   Looper.prepare();
+                   HttpClient httpClient = new DefaultHttpClient();
+                   HttpGet httpGet = new HttpGet("http://192.168.0.200:8090/App/GetCoalField");
+                   // String key = "[{FIELDNAME:A,COALFIELDID:1},{FIELDNAME:B,COALFIELDID:2}]";
+                   try {
+                       HttpResponse httpResponse = httpClient.execute(httpGet);
+                       String key = EntityUtils.toString(httpResponse.getEntity());
+                       JSONArray jsonArray = new JSONArray(key);
+                       jsonreal = jsonArray;
+                       for (int i = 0; i < jsonArray.length(); i++) {
+                           JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                           String name = (String) jsonObject.get("FIELDNAME");
+                           Integer id = (Integer) jsonObject.get("COALFIELDID");
+                           String iid = String.valueOf(id);
+                           sslist.add(name);
+                           sslist.add(iid);
 
-       try {
-           HttpClient httpClient = new DefaultHttpClient();
-           HttpPost httpPost = new HttpPost("http://192.168.0.200:8090/home/GetProduct");
-           httpPost.setHeader("Content-Type", "application/json;charset=utf-8");
-           JSONObject param = new JSONObject();
-           param.put("p2", "p2");
-           StringEntity se = new StringEntity(param.toString());
-           httpPost.setEntity(se);
-           HttpResponse httpResponse = httpClient.execute(httpPost);
-           String key = EntityUtils.toString(httpResponse.getEntity());
+                       }
+                       for (int i = 0; i < sslist.size(); ) {
+                           String s1 = null;
+                           String s2 = null;
+                           for (int j = i; j < i + 2; j++) {
+                               if (j % 2 == 0) {
+                                   s1 = sslist.get(j);
+                                   slist.add(s1);
+                               } else {
+                                   s2 = sslist.get(j);
+                               }
 
-           JSONObject jsonObject = new JSONObject(key);
-           JSONArray jsonArray = jsonObject.getJSONArray("fieldname");
-           for (int i = 0; i < jsonArray.length(); i++) {
-               Object o = jsonArray.get(i);
-               slist.add(o.toString());
-           }
-       } catch (Exception e) {
-           e.printStackTrace();
+                           }
+                           map.put(s1, s2);
+                           i += 2;
+                       }
+                       adapter.notifyDataSetChanged();
+                   } catch (Exception e) {
+                       e.printStackTrace();
+                   }
+                   Looper.loop();
+               }
+           }).start();
        }
-
-       slist.add("请选择");
-       slist.add("A煤场");
-       slist.add("B煤场");
-       slist.add("C煤场");
-
        return slist;
    }
     //清除处理
